@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // Automatically navigate to the home screen after 3 seconds
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacementNamed(context, '/home');
     });
   }
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Padding(
                     padding: EdgeInsets.all(_glowAnimation.value),
                     child: const Text(
-                      'Transfer Market',
+                      'Transfer Central',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

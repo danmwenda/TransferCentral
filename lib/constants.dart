@@ -6,6 +6,7 @@ class routeNames {
   static const String splashScreen = '/splash';
   static const String homeScreenRoute = '/home';
   static const String favoriteTeamsDialogRoute = '/favoriteTeams';
+  static const String teamNewsScreenRoute = '/teamNews';
 }
 class AppColors {
   static const int _primaryColorValue = 0xFF158744;

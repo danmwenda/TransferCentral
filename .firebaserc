@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "transfer-central": "infinitv-dabf5",
+    "notifications": "transfer-central",
+    "default": "transfer-central"
+  },
+  "targets": {},
+  "etags": {}
+}
