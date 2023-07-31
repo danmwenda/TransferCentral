@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
     });
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Transfer Central',
       theme: ThemeData(
         primarySwatch: AppColors.primaryColor,

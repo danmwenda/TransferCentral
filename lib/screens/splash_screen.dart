@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:transfercentral/screens/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/splash';
@@ -21,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
 
     _glowAnimation = Tween<double>(begin: 0.0, end: 10.0).animate(
@@ -64,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/logo.png',
+              'assets/images/transfercentral.png',
               width: 150, // Adjust the width to fit your desired size
               height: 150, // Adjust the height to fit your desired size
             ),

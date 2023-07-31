@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.transfercentral">
+    package="com.danledev.transfercentral">
    <application
-        android:label="transfercentral"
+        android:label="Transfer Central"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

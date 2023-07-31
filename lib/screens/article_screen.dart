@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -20,6 +21,8 @@ class _ArticleScreenState extends State<ArticleScreen> {
   final ValueNotifier<bool> _isLoading = ValueNotifier(true);
   final ValueNotifier<bool> _isError = ValueNotifier(false);
   InterstitialAd? _interstitialAd;
+  bool _adShown = false;
+  var adUnitId = 'ca-app-pub-2888500068840166/2469943874';
 
   @override
   void initState() {
@@ -38,7 +41,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
             _isError.value = false;
           },
           onPageFinished: (String url) {
-            _isLoading.value = false;
+            _isLoading.value = true;
             _isError.value = false;
             _controller.clearCache();
           },
@@ -64,28 +67,52 @@ class _ArticleScreenState extends State<ArticleScreen> {
   }
 
   /// Loads an interstitial ad.
-  final adUnitId = 'ca-app-pub-2888500068840166/2469943874';
   void _createInterstitialAd() {
     InterstitialAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (InterstitialAd ad) {
+        onAdLoaded: (ad) {
+          debugPrint('$ad loaded.');
           _interstitialAd = ad;
+          // Show the ad as soon as it is loaded.
+          if (!_adShown) {
+            _showInterstitialAd();
+          }
         },
-        onAdFailedToLoad: (LoadAdError error) {
-          print(error.message);
+        onAdFailedToLoad: (error) {
+          if (kDebugMode) {
+            print('Ad failed to load: $error');
+          }
         },
       ),
     );
   }
 
-  void _showInterstitialAd() {
+  void _showInterstitialAd() async {
     if (_interstitialAd == null) {
-      _createInterstitialAd();
+      return;
     }
 
-    _interstitialAd?.show();
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        if (_adShown) {
+          Navigator.of(context).pop();
+        } else {
+          setState(() {
+            _adShown = true;
+          });
+        }
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        if (kDebugMode) {
+          print('$ad onAdFailedToShowFullScreenContent: $error');
+        }
+      },
+    );
+
+    _interstitialAd!.show();
+    _interstitialAd = null;
   }
 
   @override

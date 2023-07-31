@@ -44,27 +44,30 @@ dependencies:
   firebase_messaging: ^14.6.4
   firebase_database: ^10.2.3
   firebase_core: ^2.14.0
-  google_mobile_ads: ^3.0.0
   url_launcher: ^6.1.12
   timeago: ^3.5.0
+  google_mobile_ads: ^3.0.0
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.1.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/transfercentral.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
-  flutter_launcher_icons: ^0.13.1
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/logo.png"
+  
+  
 
 
 

@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Inter Milan',
     'FC Bayern Munich',
     'Borussia Dortmund',
-    'Paris Saint-Germain',
+    'Paris Saint-Germain F.C.',
   ];
 
   final Map<String, String> teamLogos = {
@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Inter Milan': 'assets/images/intermilan.png',
     'FC Bayern Munich': 'assets/images/bayern.png',
     'Borussia Dortmund': 'assets/images/borussia.png',
-    'Paris Saint-Germain': 'assets/images/psg.png',
+    'Paris Saint-Germain F.C.': 'assets/images/psg.png',
   };
 
   late bool _hasInternet;
@@ -58,9 +58,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _createInterstitialAd();
     _checkInternetConnection();
     _showFavoriteTeamsDialogIfNeeded();
+
+    // Listen for changes in internet connectivity status
+    Connectivity().onConnectivityChanged.listen((result) {
+      setState(() {
+        _hasInternet = result != ConnectivityResult.none;
+      });
+      if (_hasInternet) {
+        _refreshScreen();
+      }
+    });
   }
 
   @override
@@ -75,21 +84,31 @@ class _HomeScreenState extends State<HomeScreen> {
       _hasInternet = connectivityResult != ConnectivityResult.none;
     });
     if (!_hasInternet) {
-      // ignore: use_build_context_synchronously
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('No Internet Connection'),
-          content: const Text(
-              'Please check your internet connection and try again.'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
+      // Show the red alert at the bottom of the screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red, // Red background color for the alert
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: Colors.white,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'No Internet Connection',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          duration: Duration(
+              seconds: 3), // Duration for how long the alert should be shown
         ),
       );
+    } else {
+      // If the internet connection is restored, hide any visible SnackBar
+      _refreshScreen();
     }
   }
 
@@ -135,29 +154,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Loads an interstitial ad.
-  final adUnitId = 'ca-app-pub-2888500068840166/2469943874';
-  void _createInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (InterstitialAd ad) {
-          _interstitialAd = ad;
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          print(error.message);
-        },
-      ),
-    );
-  }
-
-  void _showInterstitialAd() {
-    if (_interstitialAd == null) {
-      _createInterstitialAd();
-    }
-
-    _interstitialAd?.show();
+  void _refreshScreen() {
+    setState(() {
+      _showFavoriteTeamsDialogIfNeeded();
+    });
   }
 
   @override
@@ -196,7 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
           final logoPath = teamLogos[teamName]!;
           return InkWell(
             onTap: () {
-              _showInterstitialAd();
               _navigateToTeamNewsScreen(context, teamName);
             },
             child: Container(

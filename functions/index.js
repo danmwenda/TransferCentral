@@ -80,7 +80,7 @@ exports.api = functions.https.onRequest(app);
 
 
 exports.fetchNews = functions.pubsub
-    .schedule("0 */12 * * *")
+    .schedule("0 */3 * * *")
     .timeZone("Africa/Nairobi")
     .onRun(async (context) => {
       const teamNames = [
@@ -111,17 +111,24 @@ exports.fetchNews = functions.pubsub
           $("article").each((i, article) => {
             const title = $(article).find("h3").text();
             const publishedAt = $(article).find("time").attr("datetime");
-            const urlToImage = $("article > figure").find("img").attr("srcset");
+            const urlToImage = $(article).find("img")
+                .attr("src");
             const url = $(article).find("a").attr("href");
-            const source = $("article > div").find("img").attr("src");
+            const source = $(article).find("div").find("img")
+                .attr("src");
 
-            articles.push({
-              title: title,
-              publishedAt: publishedAt,
-              urlToImage: urlToImage,
-              url: url,
-              source: source,
-            });
+            const date = new Date(publishedAt);
+            const now = new Date();
+
+            if (now - date < 24 * 60 * 60 * 1000) {
+              articles.push({
+                title: title,
+                publishedAt: publishedAt,
+                urlToImage: urlToImage,
+                url: url,
+                source: source,
+              });
+            }
           });
 
           // Get the reference to the team's document
@@ -156,7 +163,7 @@ exports.fetchNews = functions.pubsub
     });
 
 exports.deleteOldArticles = functions.pubsub
-    .schedule("0 0 * * 0")
+    .schedule("0 */12 * * 0")
     .timeZone("Africa/Nairobi")
     .onRun(async (context) => {
       try {
@@ -205,7 +212,12 @@ exports.sendNotification = functions.firestore
     .onCreate(async (snapshot, context) => {
       try {
         const {teamName, articleId} = context.params;
-        const article = snapshot.data();
+
+        const query = db.collection(teamName).orderBy("publishedAt", "desc")
+            .limit(1);
+        const snapshot = await query.get();
+
+        const article = snapshot.docs[0].data();
 
         const payload = {
           notification: {

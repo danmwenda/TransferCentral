@@ -156,12 +156,9 @@ class _FavoriteTeamsDialogState extends State<FavoriteTeamsDialog> {
             ),
           ),
           if (_isLoading)
-            Container(
-              color: Colors.black54,
-              child: Center(
-                child: LoadingAnimationWidget.fourRotatingDots(
-                    color: const Color(0xFF158744), size: 50),
-              ),
+            Center(
+              child: LoadingAnimationWidget.fourRotatingDots(
+                  color: const Color(0xFF158744), size: 50),
             ),
         ],
       ),
@@ -177,7 +174,6 @@ class _FavoriteTeamsDialogState extends State<FavoriteTeamsDialog> {
             await saveSelectedTeams();
             await unsubscribeFromTeams();
             await subscribeToTeams();
-
             Navigator.pop(context, selectedTeams);
           },
           child: const Text('Save'),
