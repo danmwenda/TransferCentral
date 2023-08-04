@@ -163,7 +163,7 @@ exports.fetchNews = functions.pubsub
     });
 
 exports.deleteOldArticles = functions.pubsub
-    .schedule("0 */12 * * 0")
+    .schedule("0 */12 * * *")
     .timeZone("Africa/Nairobi")
     .onRun(async (context) => {
       try {
@@ -187,12 +187,12 @@ exports.deleteOldArticles = functions.pubsub
         for (const teamName of teamNames) {
           const articles = await db.collection(teamName).get();
           const now = Date.now();
-          const twoWeeksAgo = now - 14 * 24 * 60 * 60 * 1000;
+          const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
           for (const article of articles.docs) {
             const datetime = article.data().publishedAt;
             const articleDate = Date.parse(datetime);
-            if (articleDate < twoWeeksAgo) {
+            if (articleDate < oneWeekAgo) {
               await db.collection(teamName).doc(article.id).delete();
             }
           }
@@ -207,36 +207,58 @@ exports.deleteOldArticles = functions.pubsub
     });
 
 // Cloud Function to send notification for new article
-exports.sendNotification = functions.firestore
-    .document("{teamName}/{articleId}")
-    .onCreate(async (snapshot, context) => {
+exports.sendNotification = functions.pubsub
+    .schedule("5 */3 * * *")
+    .timeZone("Africa/Nairobi")
+    .onRun(async (context) => {
       try {
-        const {teamName, articleId} = context.params;
+        const teamNames = [
+          "Manchester United F.C.",
+          "Manchester City F.C.",
+          "Liverpool F.C.",
+          "Chelsea F.C.",
+          "Arsenal F.C.",
+          "Tottenham Hotspur F.C.",
+          "FC Barcelona",
+          "Real Madrid CF",
+          "Juventus F.C.",
+          "A.C. Milan",
+          "Inter Milan",
+          "FC Bayern Munich",
+          "Borussia Dortmund",
+          "Paris Saint-Germain F.C.",
+        ];
 
-        const query = db.collection(teamName).orderBy("publishedAt", "desc")
-            .limit(1);
-        const snapshot = await query.get();
+        for (const teamName of teamNames) {
+          const query = db.collection(teamName).orderBy("publishedAt", "desc")
+              .limit(1);
+          const snapshot = await query.get();
 
-        const article = snapshot.docs[0].data();
+          const article = snapshot.docs[0];
 
-        const payload = {
-          notification: {
-            title: `New Article for ${teamName}`,
-            body: `Check out the latest article: ${article.title}`,
-          },
-          data: {
-            articleId: articleId,
-          },
-        };
+          if (article.data().publishedAt === snapshot.docs[0].data()
+              .publishedAt) {
+            const payload = {
+              notification: {
+                title: `New Article for ${teamName}`,
+                body: article.data().title,
+                imageUrl: article.data().urlToImage,
+              },
+              data: {
+                articleId: article.id,
+              },
+            };
 
-        const messaging = admin.messaging();
-        const topic = teamName.replace(/ /g, "_");
-        await messaging.sendToTopic(topic, payload);
+            const messaging = admin.messaging();
+            const topic = teamName.replace(/ /g, "_");
+            await messaging.sendToTopic(topic, payload);
 
-        console.log("Notification sent successfully");
+            console.log("Notification sent successfully");
+          }
+        }
         return null;
       } catch (error) {
-        console.error("Error sending notification:", error);
+        console.error("Error sending notifications:", error);
         return null;
       }
     });
